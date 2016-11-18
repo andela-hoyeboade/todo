@@ -29,6 +29,9 @@ class LoginView(ObtainAuthToken):
                              'Username does not exist.'},
                             status=status.HTTP_400_BAD_REQUEST)
         # try:
+        #user = User.objects.filter(username=username).first()
+        # return Response({'data': {'username': user.username, 'password':
+        # user.password}})
         return super(LoginView, self).post(request)
         # except:
         # return Response({'message': 'Password incorrect.'},
@@ -41,16 +44,15 @@ class BucketlistViewSets(viewsets.ModelViewSet):
     queryset = Bucketlist.objects.all()
 
     def list(self, request):
-        queryset = Bucketlist.objects.all()
+        queryset = Bucketlist.objects.filter(owner=request.user)
         serializer = BucketlistSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def create(self, request):
         serializer = BucketlistSerializer(
             data=request.data)
-        user = User.objects.get(username='migwi')
         if serializer.is_valid():
-            serializer.save(owner=user)
+            serializer.save(owner=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response({'message': 'Name missing'}, status=status.HTTP_400_BAD_REQUEST)
 
